@@ -27,7 +27,7 @@ const Home = () => {
             </div>
         </div>
         <footer>
-            <h4>Built by Team BlockSmiths</h4>
+            <h4>Build By Team BlockSmiths</h4>
         </footer>
     </div>;
     
