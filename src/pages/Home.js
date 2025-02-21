@@ -28,7 +28,7 @@ const Home = () => {
                 USERNAME,
             },
         });
-    }
+    };
     
     const handleInputEnter = (e) => {
         if (e.code === 'Enter') {
