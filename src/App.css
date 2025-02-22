@@ -4,6 +4,7 @@
   align-items: center;
   justify-content: center;
   color: #fff;
+  height: 100vh;
 
 }
 
@@ -93,7 +94,6 @@ footer{
 .mainWrap {
   display: grid;
   grid-template-columns: 230px 1fr;
-  height: 100vh;
 }
 
 .aside {
