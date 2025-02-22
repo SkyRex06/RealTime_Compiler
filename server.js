@@ -1,52 +1,55 @@
 const express = require('express');
 const app = express();
 const http = require('http');
-const path = require('path');
 const { Server } = require('socket.io');
 const ACTIONS = require('./src/actions');
 
 const server = http.createServer(app);
 const io = new Server(server);
-const userSocketMap = {}; // { username: socketId }
+const userSocketMap = {}; // { socketId: username }
 
 function getAllConnectedClients(RoomID) {
-    return Array.from(io.sockets.adapter.rooms.get(RoomID) || []).map((socketId) => {
-        const username = Object.keys(userSocketMap).find(key => userSocketMap[key] === socketId);
-        return {
+    return Array.from(io.sockets.adapter.rooms.get(RoomID) || [])
+        .filter(socketId => userSocketMap[socketId]) // Only include valid usernames
+        .map(socketId => ({
             socketId,
-            USERNAME: username,
-        };
-    });
+            USERNAME: userSocketMap[socketId],
+        }));
 }
 
 io.on('connection', (socket) => {
     console.log('Socket connected:', socket.id);
 
     socket.on(ACTIONS.JOIN, ({ RoomId, USERNAME }) => {
-        // Remove the old socket if the same user reconnects
+        if (!USERNAME) {
+            console.log(`Invalid username for socket ${socket.id}`);
+            return;
+        }
+
+        // Remove old socket if username already exists
         Object.keys(userSocketMap).forEach((key) => {
-            if (userSocketMap[key] === socket.id) {
+            if (userSocketMap[key] === USERNAME) {
                 delete userSocketMap[key];
             }
         });
 
-        userSocketMap[USERNAME] = socket.id;
+        userSocketMap[socket.id] = USERNAME;
         socket.join(RoomId);
 
         const clients = getAllConnectedClients(RoomId);
+        console.log('Updated Clients:', clients);
+
         io.to(RoomId).emit(ACTIONS.JOINED, {
             clients,
             USERNAME,
             socketId: socket.id,
         });
-
-        console.log('Updated Clients:', clients);
     });
 
     socket.on('disconnecting', () => {
-        const username = Object.keys(userSocketMap).find(key => userSocketMap[key] === socket.id);
+        const username = userSocketMap[socket.id];
         if (username) {
-            delete userSocketMap[username];
+            delete userSocketMap[socket.id];
         }
 
         const rooms = [...socket.rooms];
