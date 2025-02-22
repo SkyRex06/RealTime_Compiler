@@ -41,6 +41,17 @@ const EditorPage = () => {
 
                 setClients(clients);
             });
+
+            //Listening for disconnected
+            socketRef.current.on(ACTIONS.DISCONNECTED, ({socketId, USERNAME }) => {
+                toast.success(`${USERNAME} left the room`);
+                setClients((prev) => {
+                    return prev.filter(client =>client.socketId !== socketId
+
+                     );
+                })
+                   
+            })
         };
 
         init();
