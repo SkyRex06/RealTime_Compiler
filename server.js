@@ -33,6 +33,7 @@ io.on('connection', (socket) => {
             }
         });
 
+        // Store the new socket mapping
         userSocketMap[socket.id] = USERNAME;
         socket.join(RoomId);
 
@@ -44,29 +45,15 @@ io.on('connection', (socket) => {
             USERNAME,
             socketId: socket.id,
         });
-
-
-        socket.on('disconnecting', () => {
-            const rooms = [...socket.rooms];
-            rooms.forEach((RoomId) => {
-                socket.in(RoomId),emit(ACTIONS.DISCONNECTED, {
-                    socketId: socket,id,
-                    USERNAME: userSocketMap[socket.id],
-                });
-
-            });
-            delete userSocketMap[socket.id];
-            socket.leave();
-        });
     });
 
     socket.on('disconnecting', () => {
         const username = userSocketMap[socket.id];
-        if (username) {
-            delete userSocketMap[socket.id];
-        }
+
+        if (!username) return;
 
         const rooms = [...socket.rooms];
+
         rooms.forEach((RoomId) => {
             socket.to(RoomId).emit(ACTIONS.DISCONNECTED, {
                 socketId: socket.id,
@@ -74,6 +61,7 @@ io.on('connection', (socket) => {
             });
         });
 
+        delete userSocketMap[socket.id];
         console.log(`User ${username} disconnected.`);
     });
 
@@ -84,4 +72,3 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Listening on port ${PORT}`));
-
