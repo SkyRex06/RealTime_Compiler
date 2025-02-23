@@ -5,9 +5,9 @@ import "codemirror/addon/edit/closetag";
 import "codemirror/addon/edit/closebrackets";
 import "codemirror/theme/dracula.css";
 import CodeMirror from "codemirror";
-import { sendCodeChange, subscribeToCodeChanges } from "../socket";
+import ACTIONS from "../actions";
 
-const Editor = ({ socket, roomId }) => {
+const Editor = ({ socketRef, RoomId }) => {
     const [editor, setEditor] = useState(null);
 
     useEffect(() => {
@@ -28,8 +28,8 @@ const Editor = ({ socket, roomId }) => {
         setEditor(cmInstance);
 
         // Listen for real-time code updates
-        if (socket) {
-            subscribeToCodeChanges(socket, ({ code }) => {
+        if (socketRef.current) {
+            socketRef.current.on(ACTIONS.CODE_CHANGE, ({ code }) => {
                 if (cmInstance.getValue() !== code) {
                     cmInstance.setValue(code);
                 }
@@ -39,15 +39,17 @@ const Editor = ({ socket, roomId }) => {
         // Send code updates when typing
         cmInstance.on("change", (cm) => {
             const newCode = cm.getValue();
-            sendCodeChange(socket, roomId, newCode);
+            if (socketRef.current) {
+                socketRef.current.emit(ACTIONS.CODE_CHANGE, { RoomId, code: newCode });
+            }
         });
 
         return () => {
-            if (socket) {
-                socket.off("code-change");
+            if (socketRef.current) {
+                socketRef.current.off(ACTIONS.CODE_CHANGE);
             }
         };
-    }, [socket, roomId]);
+    }, [socketRef, RoomId]);
 
     return <textarea id="realtimeEditor"></textarea>;
 };
