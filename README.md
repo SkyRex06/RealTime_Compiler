@@ -1,10 +1,12 @@
 # Real-Time Code Editor
 
-![Real-Time Code Editor](https://your-image-url.com/banner.png)
 
 ## Introduction
 
 The **Real-Time Code Editor** is a collaborative coding platform that enables multiple users to write, edit, and execute code together in real time. Built using the **MERN (MongoDB, Express.js, React, Node.js) stack** and powered by **Socket.IO** for real-time communication, this project enhances teamwork and coding efficiency for developers.
+
+## Youtube Video
+**Demo Video:** [Watch on YouTube]([https://www.youtube.com/watch?v=o4RimBKXyoY])
 
 ## Table of Contents
 
@@ -19,7 +21,6 @@ The **Real-Time Code Editor** is a collaborative coding platform that enables mu
 - [Technologies Used](#technologies-used)
 - [Contributing](#contributing)
 - [License](#license)
-- [Screenshots](#screenshots)
 
 ## Features
 
@@ -29,6 +30,13 @@ The **Real-Time Code Editor** is a collaborative coding platform that enables mu
 ✅ **User-Friendly Interface:** Simple and responsive design for seamless usage.
 
 ## Project Structure
+
+realtime-code-editor/
+├── client/        # Frontend (React.js)
+├── server/        # Backend (Node.js, Express)
+├── public/        # Static assets
+├── package.json   # Project dependencies
+└── README.md      # Project documentation
 
 
 ## Getting Started
@@ -47,34 +55,38 @@ Ensure you have the following installed:
 
 1. **Clone the repository:**
 
-    ```sh
+    
+sh
     git clone https://github.com/codersgyan/realtime-code-editor.git
     cd realtime-code-editor
-    ```
+
 
 2. **Install dependencies:**
 
-    ```sh
+    
+sh
     npm install
-    ```
+
 
 ### Running the Application
 
 1. **Start the backend server:**
 
-    ```sh
+    
+sh
     cd server
     npm start
-    ```
+
 
 2. **Start the frontend application:**
 
-    ```sh
+    
+sh
     cd client
     npm start
-    ```
 
-3. Open your browser and navigate to `http://localhost:3000` to start coding collaboratively.
+
+3. Open your browser and navigate to http://localhost:3000 to start coding collaboratively.
 
 ## Usage
 
@@ -96,21 +108,24 @@ Contributions are welcome! To contribute:
 1. **Fork the repository**.
 2. **Create a new branch:**
 
-    ```sh
+    
+sh
     git checkout -b feature-name
-    ```
+
 
 3. **Make your changes** and commit:
 
-    ```sh
+    
+sh
     git commit -m 'Add some feature'
-    ```
+
 
 4. **Push to the branch:**
 
-    ```sh
+    
+sh
     git push origin feature-name
-    ```
+
 
 5. **Open a pull request.**
 
@@ -118,13 +133,5 @@ Contributions are welcome! To contribute:
 
 This project is licensed under the [MIT License](LICENSE).
 
+
 If you find this project useful, consider giving it a ⭐ on GitHub!
-
-## Screenshots
-
-Here are some screenshots of the project in action:
-
-![Screenshot 1](./screenshots/ScreenRecording_2025-02-23_194431.mp4)  
-![Screenshot 2](./screenshots/ScreenRecording_2025-02-23_194813.mp4)  
-![Screenshot 3](./screenshots/ScreenRecording_2025-02-23_194844.mp4)  
-![Screenshot 4](./screenshots/ScreenRecording_2025-02-23_195826.mp4)  
