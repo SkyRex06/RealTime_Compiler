@@ -1,57 +1,58 @@
-import React, { useEffect, useState } from "react";
-import "codemirror/lib/codemirror.css"; // Core CSS
-import "codemirror/mode/javascript/javascript"; // JavaScript mode
-import "codemirror/addon/edit/closetag";
-import "codemirror/addon/edit/closebrackets";
-import "codemirror/theme/dracula.css";
-import CodeMirror from "codemirror";
-import ACTIONS from "../actions";
+import React, { useEffect, useRef } from 'react';
+import Codemirror from 'codemirror';
+import 'codemirror/lib/codemirror.css';
+import 'codemirror/theme/dracula.css';
+import 'codemirror/mode/javascript/javascript';
+import 'codemirror/addon/edit/closetag';
+import 'codemirror/addon/edit/closebrackets';
+import ACTIONS from '../actions';
 
-const Editor = ({ socketRef, RoomId }) => {
-    const [editor, setEditor] = useState(null);
+const Editor = ({ socketRef, RoomId, onCodeChange }) => {
+    const editorRef = useRef(null);
+    useEffect(() => {
+        async function init() {
+            editorRef.current = Codemirror.fromTextArea(
+                document.getElementById('realtimeEditor'),
+                {
+                    mode: { name: 'javascript', json: true },
+                    theme: 'dracula',
+                    autoCloseTags: true,
+                    autoCloseBrackets: true,
+                    lineNumbers: true,
+                }
+            );
+
+            editorRef.current.on('change', (instance, changes) => {
+                const { origin } = changes;
+                const code = instance.getValue();
+                onCodeChange(code);
+                if (origin !== 'setValue') {
+                    socketRef.current.emit(ACTIONS.CODE_CHANGE, {
+                        RoomId,
+                        code,
+                    });
+                }
+            });
+        }
+        init();
+    }, []);
 
     useEffect(() => {
-        const textarea = document.getElementById("realtimeEditor");
-
-        if (textarea.classList.contains("cm-initialized")) return;
-
-        textarea.classList.add("cm-initialized");
-
-        const cmInstance = CodeMirror.fromTextArea(textarea, {
-            mode: { name: "javascript", json: true },
-            theme: "dracula",
-            autoCloseTags: true,
-            autoCloseBrackets: true,
-            lineNumbers: true,
-        });
-
-        setEditor(cmInstance);
-
-        // Listen for real-time code updates
         if (socketRef.current) {
             socketRef.current.on(ACTIONS.CODE_CHANGE, ({ code }) => {
-                if (cmInstance.getValue() !== code) {
-                    cmInstance.setValue(code);
+                if (code !== null) {
+                    editorRef.current.setValue(code);
                 }
             });
         }
 
-        // Send code updates when typing
-        cmInstance.on("change", (cm) => {
-            const newCode = cm.getValue();
-            if (socketRef.current) {
-                socketRef.current.emit(ACTIONS.CODE_CHANGE, { RoomId, code: newCode });
-            }
-        });
-
         return () => {
-            if (socketRef.current) {
-                socketRef.current.off(ACTIONS.CODE_CHANGE);
-            }
+            socketRef.current.off(ACTIONS.CODE_CHANGE);
         };
-    }, [socketRef, RoomId]);
+    }, [socketRef.current]);
 
     return <textarea id="realtimeEditor"></textarea>;
 };
 
 export default Editor;
+
