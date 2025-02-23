@@ -6,7 +6,7 @@
 The **Real-Time Code Editor** is a collaborative coding platform that enables multiple users to write, edit, and execute code together in real time. Built using the **MERN (MongoDB, Express.js, React, Node.js) stack** and powered by **Socket.IO** for real-time communication, this project enhances teamwork and coding efficiency for developers.
 
 ## Youtube Video
-**Demo Video:** [Watch on YouTube]([https://www.youtube.com/watch?v=o4RimBKXyoY])
+**Demo Video:** [Watch on YouTube](https://www.youtube.com/watch?v=o4RimBKXyoY)
 
 ## Table of Contents
 
