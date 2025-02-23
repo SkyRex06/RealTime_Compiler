@@ -9,6 +9,7 @@ import ACTIONS from '../actions';
 
 const Editor = ({ socketRef, RoomId, onCodeChange }) => {
     const editorRef = useRef(null);
+
     useEffect(() => {
         async function init() {
             editorRef.current = Codemirror.fromTextArea(
@@ -23,45 +24,41 @@ const Editor = ({ socketRef, RoomId, onCodeChange }) => {
             );
 
             editorRef.current.on('change', (instance, changes) => {
-                console.log('changes',changes);
                 const { origin } = changes;
                 const code = instance.getValue();
                 onCodeChange(code);
-                console.log(code);
-                if (origin!== 'setValue'){
-                    socketRef.current.emit(ACTIONS.CODE_CHANGE,
+
+                if (origin !== 'setValue' && socketRef.current) {
+                    socketRef.current.emit(ACTIONS.CODE_CHANGE, {
                         RoomId,
                         code,
-                    )
+                    });
                 }
-                
-
             });
         }
         init();
-
     }, []);
 
     useEffect(() => {
         if (!socketRef.current) return;
-    
+
         const handleCodeChange = ({ code }) => {
-            if (code !== null && editorRef.current) {
-                editorRef.current.setValue(code);
+            if (editorRef.current) {
+                const currentCode = editorRef.current.getValue();
+                if (currentCode !== code) {
+                    editorRef.current.setValue(code);
+                }
             }
         };
-    
+
         socketRef.current.on(ACTIONS.CODE_CHANGE, handleCodeChange);
-    
+
         return () => {
-            // ✅ Ensure socketRef.current is valid before calling 'off'
             if (socketRef.current) {
                 socketRef.current.off(ACTIONS.CODE_CHANGE, handleCodeChange);
             }
         };
-    }, [socketRef]); // ✅ Correct dependency
-    
-    
+    }, [socketRef]);
 
     return <textarea id="realtimeEditor"></textarea>;
 };
