@@ -6,7 +6,7 @@ import "codemirror/mode/python/python";
 import "codemirror/addon/edit/closetag";
 import "codemirror/addon/edit/closebrackets";
 import ACTIONS from "../actions";
-import "./Editor.css"; // Importing CSS for better UI
+import "./Editor.css"; // Updated UI Styling
 
 const Editor = ({ socketRef, RoomId, onCodeChange }) => {
     const editorRef = useRef(null);
@@ -14,7 +14,7 @@ const Editor = ({ socketRef, RoomId, onCodeChange }) => {
     const [isRunning, setIsRunning] = useState(false);
 
     useEffect(() => {
-        async function init() {
+        function init() {
             editorRef.current = Codemirror.fromTextArea(
                 document.getElementById("realtimeEditor"),
                 {
@@ -75,12 +75,14 @@ const Editor = ({ socketRef, RoomId, onCodeChange }) => {
     return (
         <div className="editor-container">
             <textarea id="realtimeEditor"></textarea>
-            <button className={`run-button ${isRunning ? "running" : ""}`} onClick={runCode}>
-                {isRunning ? "Running..." : "Run Code"}
-            </button>
-            <div className="output-section">
-                <h3>Output:</h3>
-                <pre>{output}</pre>
+            <div className="bottom-panel">
+                <button className={`run-button ${isRunning ? "running" : ""}`} onClick={runCode}>
+                    {isRunning ? "Running..." : "Run Code"}
+                </button>
+                <div className="output-section">
+                    <h3>Output:</h3>
+                    <pre>{output}</pre>
+                </div>
             </div>
         </div>
     );

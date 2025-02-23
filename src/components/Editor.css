@@ -1,28 +1,55 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body, html {
+    width: 100%;
+    height: 100%;
+    overflow: hidden; /* No scrolling */
+    background-color: #1e1e2e;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
 .editor-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 100%;
+    justify-content: center;
+    width: 100vw;
+    height: 100vh;
     padding: 20px;
     background-color: #1e1e2e;
-    min-height: 100vh;
 }
 
 #realtimeEditor {
     width: 100%;
-    max-width: 900px;
-    height: 400px;
+    height: 60vh; /* Adjust height to fit screen */
     font-size: 16px;
     border: 2px solid #4caf50;
     border-radius: 8px;
     background-color: #282a36;
     color: white;
     padding: 10px;
+    resize: none;
+    outline: none;
+}
+
+.bottom-panel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    height: 35vh; /* Fixed height to prevent scrolling */
+    padding: 10px;
+    background: #222437;
+    border-top: 2px solid #4caf50;
 }
 
 .run-button {
-    margin-top: 15px;
-    padding: 10px 20px;
+    padding: 12px 25px;
     font-size: 18px;
     border: none;
     border-radius: 6px;
@@ -42,13 +69,18 @@
 }
 
 .output-section {
-    width: 100%;
-    max-width: 900px;
-    margin-top: 20px;
+    flex: 1;
+    padding: 10px;
     background-color: #282a36;
     color: #50fa7b;
-    padding: 10px;
     border-radius: 8px;
     font-size: 16px;
     white-space: pre-wrap;
+    overflow: hidden;
+}
+.editor {
+    width: 100vw;  /* Full width */
+    height: 100vh; /* Full height */
+    direction: rtl; /* Right-to-left text direction */
+    text-align: right; /* Align text to the right */
 }
