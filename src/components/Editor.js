@@ -23,6 +23,7 @@ const Editor = ({ socketRef, RoomId, onCodeChange }) => {
                     autoCloseTags: true,
                     autoCloseBrackets: true,
                     lineNumbers: true,
+                    lineWrapping: true, // Ensures no horizontal scrolling
                 }
             );
 
