@@ -41,7 +41,7 @@ const EditorPage = () => {
                 }
 
                 setClients(clients);
-                socketRef.current.emit(ACTIONS.SYNC_CODE, {});
+                socketRef.current.emit(ACTIONS.SYNC_CODE,codeRef.current );
             });
 
             //Listening for disconnected
