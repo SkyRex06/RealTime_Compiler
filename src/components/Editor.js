@@ -2,21 +2,21 @@ import React, { useEffect, useRef, useState } from 'react';
 import Codemirror from 'codemirror';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/theme/dracula.css';
-import 'codemirror/mode/javascript/javascript';
+import 'codemirror/mode/python/python'; // ✅ Changed mode to Python
 import 'codemirror/addon/edit/closetag';
 import 'codemirror/addon/edit/closebrackets';
 import ACTIONS from '../actions';
 
 const Editor = ({ socketRef, RoomId, onCodeChange }) => {
     const editorRef = useRef(null);
-    const [output, setOutput] = useState('');  // ✅ State to store output
+    const [output, setOutput] = useState(''); // ✅ Stores execution output
 
     useEffect(() => {
-        async function init() {
+        function init() {
             editorRef.current = Codemirror.fromTextArea(
                 document.getElementById('realtimeEditor'),
                 {
-                    mode: { name: 'javascript', json: true },
+                    mode: { name: 'python', json: true }, // ✅ Now using Python
                     theme: 'dracula',
                     autoCloseTags: true,
                     autoCloseBrackets: true,
@@ -28,8 +28,8 @@ const Editor = ({ socketRef, RoomId, onCodeChange }) => {
                 const { origin } = changes;
                 const code = instance.getValue();
                 onCodeChange(code);
-                
-                if (origin !== 'setValue') {
+
+                if (origin !== 'setValue' && socketRef.current) {
                     socketRef.current.emit(ACTIONS.CODE_CHANGE, { RoomId, code });
                 }
             });
@@ -37,34 +37,65 @@ const Editor = ({ socketRef, RoomId, onCodeChange }) => {
         init();
     }, []);
 
-    // ✅ Listen for execution output from server
     useEffect(() => {
         if (!socketRef.current) return;
 
-        socketRef.current.on(ACTIONS.CODE_OUTPUT, (data) => {
-            setOutput(data.output); // ✅ Update output
-        });
+        const handleCodeChange = ({ code }) => {
+            if (editorRef.current) {
+                const currentCode = editorRef.current.getValue();
+                if (currentCode !== code) {
+                    editorRef.current.setValue(code);
+                }
+            }
+        };
+
+        const handleCodeOutput = ({ output }) => {
+            setOutput(output);
+        };
+
+        socketRef.current.on(ACTIONS.CODE_CHANGE, handleCodeChange);
+        socketRef.current.on(ACTIONS.CODE_OUTPUT, handleCodeOutput);
 
         return () => {
-            socketRef.current.off(ACTIONS.CODE_OUTPUT);
+            if (socketRef.current) {
+                socketRef.current.off(ACTIONS.CODE_CHANGE, handleCodeChange);
+                socketRef.current.off(ACTIONS.CODE_OUTPUT, handleCodeOutput);
+            }
         };
     }, [socketRef]);
 
-    // ✅ Add a button to run the code
+    // ✅ Function to execute Python code
     const runCode = () => {
-        const code = editorRef.current.getValue();
-        socketRef.current.emit(ACTIONS.RUN_CODE, { RoomId, code });
+        if (socketRef.current) {
+            const code = editorRef.current.getValue();
+            socketRef.current.emit(ACTIONS.RUN_CODE, { RoomId, code });
+        }
     };
 
     return (
         <div>
             <textarea id="realtimeEditor"></textarea>
-            <button onClick={runCode} style={{ marginTop: '10px', padding: '5px', backgroundColor: '#333', color: '#fff' }}>
+
+            {/* ✅ Run Code Button */}
+            <button 
+                onClick={runCode} 
+                style={{ marginTop: '10px', padding: '5px', backgroundColor: '#333', color: '#fff', borderRadius: '5px', cursor: 'pointer' }}>
                 Run Code
             </button>
-            <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#222', color: '#0f0', minHeight: '100px', fontFamily: 'monospace' }}>
+
+            {/* ✅ Output Terminal */}
+            <div style={{
+                marginTop: '10px', 
+                padding: '10px', 
+                backgroundColor: '#222', 
+                color: '#0f0', 
+                minHeight: '100px', 
+                fontFamily: 'monospace', 
+                borderRadius: '5px', 
+                border: '1px solid #444'
+            }}>
                 <strong>Output:</strong>
-                <pre>{output}</pre> {/* ✅ Display output */}
+                <pre>{output}</pre> 
             </div>
         </div>
     );
