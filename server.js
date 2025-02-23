@@ -42,13 +42,18 @@ io.on('connection', (socket) => {
         });
     });
 
-    socket.on(ACTIONS.CODE_CHANGE, ({ RoomId, code }) => {
-        socket.in(RoomId).emit(ACTIONS.CODE_CHANGE, { code });
+    socket.on(ACTIONS.CODE_CHANGE, (data) => {
+        if (!data || !data.RoomId || !data.code) {
+            console.log('Invalid data received:', data);
+            return;
+        }
+        const { RoomId, code } = data;
+        console.log('Receiving:', code);
+        io.to(RoomId).emit(ACTIONS.CODE_CHANGE, { code });
     });
-
-    socket.on(ACTIONS.SYNC_CODE, ({ socketId, code }) => {
-        io.to(socketId).emit(ACTIONS.CODE_CHANGE, { code });
-    });
+    
+    
+    
 
     socket.on('disconnecting', () => {
         const rooms = [...socket.rooms];
