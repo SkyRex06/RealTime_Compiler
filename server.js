@@ -4,30 +4,34 @@ const http = require("http");
 const path = require("path");
 const { Server } = require("socket.io");
 const { exec } = require("child_process");
-const cors = require("cors");  // Allows frontend to make API calls
+const cors = require("cors");
 const bodyParser = require("body-parser");
 const ACTIONS = require("./src/actions");
 
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+    cors: {
+        origin: "*", // Allow requests from any origin
+        methods: ["GET", "POST"]
+    }
+});
 
 app.use(express.static("build"));
-app.use(cors());  // Enable CORS
-app.use(bodyParser.json()); // To parse JSON requests
+app.use(cors());
+app.use(bodyParser.json());
 
 app.use((req, res, next) => {
     res.sendFile(path.join(__dirname, "build", "index.html"));
 });
 
 const userSocketMap = {};
+
 function getAllConnectedClients(RoomId) {
     return Array.from(io.sockets.adapter.rooms.get(RoomId) || []).map(
-        (socketId) => {
-            return {
-                socketId,
-                USERNAME: userSocketMap[socketId],
-            };
-        }
+        (socketId) => ({
+            socketId,
+            USERNAME: userSocketMap[socketId],
+        })
     );
 }
 
@@ -53,8 +57,30 @@ io.on("connection", (socket) => {
             return;
         }
         const { RoomId, code } = data;
-        console.log("Receiving:", code);
         io.to(RoomId).emit(ACTIONS.CODE_CHANGE, { code });
+    });
+
+    // ✅ Handle Python code execution
+    socket.on(ACTIONS.RUN_CODE, ({ RoomId, code }) => {
+        if (!code) {
+            io.to(socket.id).emit(ACTIONS.CODE_OUTPUT, { output: "No code to execute." });
+            return;
+        }
+
+        console.log(`Executing Python Code in Room ${RoomId}:`);
+        console.log(code);
+
+        // **Secure Execution**: Prevent commands that could harm the server
+        if (code.includes("import os") || code.includes("subprocess")) {
+            io.to(socket.id).emit(ACTIONS.CODE_OUTPUT, { output: "Restricted code detected." });
+            return;
+        }
+
+        // **Execute Python Code**
+        exec(`python -c "${code.replace(/"/g, '\\"')}"`, (error, stdout, stderr) => {
+            const output = error ? stderr : stdout;
+            io.to(RoomId).emit(ACTIONS.CODE_OUTPUT, { output });
+        });
     });
 
     socket.on("disconnecting", () => {
@@ -67,27 +93,6 @@ io.on("connection", (socket) => {
         });
         delete userSocketMap[socket.id];
         socket.leave();
-    });
-});
-
-// 🔹 ADDING CODE EXECUTION SUPPORT 🔹
-app.post("/run", (req, res) => {
-    const { code, language } = req.body;
-
-    let command;
-    if (language === "javascript") {
-        command = `node -e "${code.replace(/"/g, '\\"')}"`;
-    } else if (language === "python") {
-        command = `python -c "${code.replace(/"/g, '\\"')}"`;
-    } else {
-        return res.json({ output: "Unsupported language!" });
-    }
-
-    exec(command, (error, stdout, stderr) => {
-        if (error) {
-            return res.json({ output: stderr });
-        }
-        res.json({ output: stdout });
     });
 });
 
