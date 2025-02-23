@@ -1,17 +1,19 @@
 .HomePageWrapper{
+  background-image: url(https://steamuserimages-a.akamaihd.net/ugc/2438013375536940927/D370DBF7BFC83ED36F783F08A598FFF3E71A1D61/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false);
   height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: #eee;
   height: 100vh;
+  
 
 }
 
 .FormWrapper{
-  background: #282a36 ;
+  background-color: #1c1b1b7e;
   padding: 20px;
-  border-radius: 10px;
+  border-radius: 30px;
   width: 400px;
   max-width: 90%;
 }
@@ -61,6 +63,20 @@ footer{
 
 }
 
+.btn:hover {
+  animation: rubberBand 0.8s ease;
+}
+
+
+@keyframes rubberBand {
+  0% { transform: scaleX(1); }
+  30% { transform: scaleX(1.25); }
+  40% { transform: scaleX(0.75); }
+  50% { transform: scaleX(1.15); }
+  65% { transform: scaleX(0.95); }
+  75% { transform: scaleX(1.05); }
+  100% { transform: scaleX(1); }
+}
 
 .joinbtn,
 .leaveBtn {
@@ -126,7 +142,7 @@ footer{
 }
 
 .logo {
-  border-bottom: 1px solid #424242;
+  border-bottom: 1px solid #dcc5c5;
   padding-bottom: 10px;
 }
 
