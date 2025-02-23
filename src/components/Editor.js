@@ -26,6 +26,7 @@ const Editor = ({ socketRef, RoomId, onCodeChange }) => {
                 console.log('changes',changes);
                 const { origin } = changes;
                 const code = instance.getValue();
+                onCodeChange(code);
                 console.log(code);
                 if (origin!== 'setValue'){
                     socketRef.current.emit(ACTIONS.CODE_CHANGE,
@@ -36,20 +37,33 @@ const Editor = ({ socketRef, RoomId, onCodeChange }) => {
                 
 
             });
-
-            socketRef.current(ACTIONS.CODE_CHANGE,({}) =>{
-                if (code !==null) {
-                    
-                }
-            })
         }
         init();
+
     }, []);
 
+    useEffect(() => {
+        if (!socketRef.current) return;
+    
+        const handleCodeChange = ({ code }) => {
+            if (code !== null && editorRef.current) {
+                editorRef.current.setValue(code);
+            }
+        };
+    
+        socketRef.current.on(ACTIONS.CODE_CHANGE, handleCodeChange);
+    
+        return () => {
+            // ✅ Ensure socketRef.current is valid before calling 'off'
+            if (socketRef.current) {
+                socketRef.current.off(ACTIONS.CODE_CHANGE, handleCodeChange);
+            }
+        };
+    }, [socketRef]); // ✅ Correct dependency
+    
     
 
     return <textarea id="realtimeEditor"></textarea>;
 };
 
 export default Editor;
-
