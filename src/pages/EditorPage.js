@@ -12,11 +12,12 @@ const EditorPage = () => {
     const { RoomId } = useParams();
     const reactNavigator = useNavigate();
     const [clients, setClients] = useState([]);
+    const codeRef = useRef(""); // Store the latest code
 
     useEffect(() => {
         const init = async () => {
             socketRef.current = await initSocket();
-            
+
             function handleErrors(err) {
                 console.log('Socket error:', err);
                 toast.error('Socket connection failed, try again later');
@@ -24,8 +25,8 @@ const EditorPage = () => {
             }
 
             socketRef.current.on('connect_error', handleErrors);
-            socketRef.current.on('connect_failed', handleErrors); // ✅ Fixed extra space
-            
+            socketRef.current.on('connect_failed', handleErrors);
+
             socketRef.current.emit(ACTIONS.JOIN, {
                 RoomId,
                 USERNAME: location.state?.USERNAME,
@@ -33,31 +34,38 @@ const EditorPage = () => {
 
             socketRef.current.on(ACTIONS.JOINED, ({ clients, USERNAME, socketId }) => {
                 console.log("Updated Clients List:", clients);
-                
+
                 if (USERNAME !== location.state?.USERNAME) {
                     toast.success(`${USERNAME} joined the room.`);
                     console.log(`${USERNAME} joined`);
                 }
 
                 setClients(clients);
+                socketRef.current.emit(ACTIONS.SYNC_CODE, {
+                    code: codeRef.current, // Send the latest code to new users
+                    socketId,
+                });
             });
 
-            //Listening for disconnected
-            socketRef.current.on(ACTIONS.DISCONNECTED, ({socketId, USERNAME }) => {
-                toast.success(`${USERNAME} left the room`);
-                setClients((prev) => {
-                    return prev.filter(client =>client.socketId !== socketId
+            // Listening for code synchronization
+            socketRef.current.on(ACTIONS.CODE_CHANGE, ({ code }) => {
+                codeRef.current = code;
+            });
 
-                     );
-                })
-                   
-            })
+            // Listening for disconnected users
+            socketRef.current.on(ACTIONS.DISCONNECTED, ({ socketId, USERNAME }) => {
+                toast.success(`${USERNAME} left the room`);
+                setClients((prev) => prev.filter(client => client.socketId !== socketId));
+            });
         };
 
         init();
 
         return () => {
             socketRef.current?.disconnect();
+            socketRef.current?.off(ACTIONS.JOINED);
+            socketRef.current?.off(ACTIONS.DISCONNECTED);
+            socketRef.current?.off(ACTIONS.CODE_CHANGE);
         };
     }, []);
 
@@ -79,7 +87,7 @@ const EditorPage = () => {
                                 <Client key={client.socketId} USERNAME={client.USERNAME} />
                             ))
                         ) : (
-                            <p>No users connected</p> // ✅ Added debug text
+                            <p>No users connected</p>
                         )}
                     </div>
                 </div>
@@ -87,7 +95,7 @@ const EditorPage = () => {
                 <button className="btn leaveBtn">Leave</button>
             </div>
             <div className="editorWrap">
-                <Editor />
+                <Editor socketRef={socketRef} RoomId={RoomId} />
             </div>
         </div>
     );
