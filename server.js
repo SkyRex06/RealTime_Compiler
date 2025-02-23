@@ -11,28 +11,25 @@ const ACTIONS = require("./src/actions");
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "*", // Allow requests from any origin
-        methods: ["GET", "POST"]
-    }
+        origin: "*",
+        methods: ["GET", "POST"],
+    },
 });
 
 app.use(express.static("build"));
 app.use(cors());
 app.use(bodyParser.json());
 
-app.use((req, res, next) => {
+app.use((req, res) => {
     res.sendFile(path.join(__dirname, "build", "index.html"));
 });
 
 const userSocketMap = {};
-
 function getAllConnectedClients(RoomId) {
-    return Array.from(io.sockets.adapter.rooms.get(RoomId) || []).map(
-        (socketId) => ({
-            socketId,
-            USERNAME: userSocketMap[socketId],
-        })
-    );
+    return Array.from(io.sockets.adapter.rooms.get(RoomId) || []).map((socketId) => ({
+        socketId,
+        USERNAME: userSocketMap[socketId],
+    }));
 }
 
 io.on("connection", (socket) => {
@@ -51,35 +48,14 @@ io.on("connection", (socket) => {
         });
     });
 
-    socket.on(ACTIONS.CODE_CHANGE, (data) => {
-        if (!data || !data.RoomId || !data.code) {
-            console.log("Invalid data received:", data);
-            return;
-        }
-        const { RoomId, code } = data;
+    socket.on(ACTIONS.CODE_CHANGE, ({ RoomId, code }) => {
         io.to(RoomId).emit(ACTIONS.CODE_CHANGE, { code });
     });
 
-    // ✅ Handle Python code execution
+    // Code execution
     socket.on(ACTIONS.RUN_CODE, ({ RoomId, code }) => {
-        if (!code) {
-            io.to(socket.id).emit(ACTIONS.CODE_OUTPUT, { output: "No code to execute." });
-            return;
-        }
-
-        console.log(`Executing Python Code in Room ${RoomId}:`);
-        console.log(code);
-
-        // **Secure Execution**: Prevent commands that could harm the server
-        if (code.includes("import os") || code.includes("subprocess")) {
-            io.to(socket.id).emit(ACTIONS.CODE_OUTPUT, { output: "Restricted code detected." });
-            return;
-        }
-
-        // **Execute Python Code**
         exec(`python -c "${code.replace(/"/g, '\\"')}"`, (error, stdout, stderr) => {
-            const output = error ? stderr : stdout;
-            io.to(RoomId).emit(ACTIONS.CODE_OUTPUT, { output });
+            io.to(RoomId).emit(ACTIONS.CODE_OUTPUT, { output: error ? stderr : stdout });
         });
     });
 
