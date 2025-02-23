@@ -1,21 +1,26 @@
-const express = require('express');
+const express = require("express");
 const app = express();
-const http = require('http');
-const path = require('path');
-const { Server } = require('socket.io');
-const ACTIONS = require('./src/actions');
+const http = require("http");
+const path = require("path");
+const { Server } = require("socket.io");
+const { exec } = require("child_process");
+const cors = require("cors");  // Allows frontend to make API calls
+const bodyParser = require("body-parser");
+const ACTIONS = require("./src/actions");
 
 const server = http.createServer(app);
 const io = new Server(server);
 
-app.use(express.static('build'));
+app.use(express.static("build"));
+app.use(cors());  // Enable CORS
+app.use(bodyParser.json()); // To parse JSON requests
+
 app.use((req, res, next) => {
-    res.sendFile(path.join(__dirname, 'build', 'index.html'));
+    res.sendFile(path.join(__dirname, "build", "index.html"));
 });
 
 const userSocketMap = {};
 function getAllConnectedClients(RoomId) {
-    // Map
     return Array.from(io.sockets.adapter.rooms.get(RoomId) || []).map(
         (socketId) => {
             return {
@@ -26,8 +31,8 @@ function getAllConnectedClients(RoomId) {
     );
 }
 
-io.on('connection', (socket) => {
-    console.log('socket connected', socket.id);
+io.on("connection", (socket) => {
+    console.log("Socket connected:", socket.id);
 
     socket.on(ACTIONS.JOIN, ({ RoomId, USERNAME }) => {
         userSocketMap[socket.id] = USERNAME;
@@ -44,18 +49,15 @@ io.on('connection', (socket) => {
 
     socket.on(ACTIONS.CODE_CHANGE, (data) => {
         if (!data || !data.RoomId || !data.code) {
-            console.log('Invalid data received:', data);
+            console.log("Invalid data received:", data);
             return;
         }
         const { RoomId, code } = data;
-        console.log('Receiving:', code);
+        console.log("Receiving:", code);
         io.to(RoomId).emit(ACTIONS.CODE_CHANGE, { code });
     });
-    
-    
-    
 
-    socket.on('disconnecting', () => {
+    socket.on("disconnecting", () => {
         const rooms = [...socket.rooms];
         rooms.forEach((RoomId) => {
             socket.in(RoomId).emit(ACTIONS.DISCONNECTED, {
@@ -65,6 +67,27 @@ io.on('connection', (socket) => {
         });
         delete userSocketMap[socket.id];
         socket.leave();
+    });
+});
+
+// 🔹 ADDING CODE EXECUTION SUPPORT 🔹
+app.post("/run", (req, res) => {
+    const { code, language } = req.body;
+
+    let command;
+    if (language === "javascript") {
+        command = `node -e "${code.replace(/"/g, '\\"')}"`;
+    } else if (language === "python") {
+        command = `python -c "${code.replace(/"/g, '\\"')}"`;
+    } else {
+        return res.json({ output: "Unsupported language!" });
+    }
+
+    exec(command, (error, stdout, stderr) => {
+        if (error) {
+            return res.json({ output: stderr });
+        }
+        res.json({ output: stdout });
     });
 });
 
