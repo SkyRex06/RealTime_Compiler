@@ -1,35 +1,37 @@
-import React, { useEffect, useRef, useState } from 'react';
-import Codemirror from 'codemirror';
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/theme/dracula.css';
-import 'codemirror/mode/python/python';
-import 'codemirror/addon/edit/closetag';
-import 'codemirror/addon/edit/closebrackets';
-import ACTIONS from '../actions';
+import React, { useEffect, useRef, useState } from "react";
+import Codemirror from "codemirror";
+import "codemirror/lib/codemirror.css";
+import "codemirror/theme/dracula.css";
+import "codemirror/mode/python/python";
+import "codemirror/addon/edit/closetag";
+import "codemirror/addon/edit/closebrackets";
+import ACTIONS from "../actions";
+import "./Editor.css"; // Importing CSS for better UI
 
 const Editor = ({ socketRef, RoomId, onCodeChange }) => {
     const editorRef = useRef(null);
     const [output, setOutput] = useState("");
+    const [isRunning, setIsRunning] = useState(false);
 
     useEffect(() => {
         async function init() {
             editorRef.current = Codemirror.fromTextArea(
-                document.getElementById('realtimeEditor'),
+                document.getElementById("realtimeEditor"),
                 {
-                    mode: { name: 'python' },
-                    theme: 'dracula',
+                    mode: { name: "python" },
+                    theme: "dracula",
                     autoCloseTags: true,
                     autoCloseBrackets: true,
                     lineNumbers: true,
                 }
             );
 
-            editorRef.current.on('change', (instance, changes) => {
+            editorRef.current.on("change", (instance, changes) => {
                 const { origin } = changes;
                 const code = instance.getValue();
                 onCodeChange(code);
 
-                if (origin !== 'setValue' && socketRef.current) {
+                if (origin !== "setValue" && socketRef.current) {
                     socketRef.current.emit(ACTIONS.CODE_CHANGE, {
                         RoomId,
                         code,
@@ -53,7 +55,10 @@ const Editor = ({ socketRef, RoomId, onCodeChange }) => {
         };
 
         socketRef.current.on(ACTIONS.CODE_CHANGE, handleCodeChange);
-        socketRef.current.on(ACTIONS.CODE_OUTPUT, ({ output }) => setOutput(output));
+        socketRef.current.on(ACTIONS.CODE_OUTPUT, ({ output }) => {
+            setOutput(output);
+            setIsRunning(false); // Stop loader
+        });
 
         return () => {
             socketRef.current.off(ACTIONS.CODE_CHANGE, handleCodeChange);
@@ -62,15 +67,21 @@ const Editor = ({ socketRef, RoomId, onCodeChange }) => {
     }, [socketRef]);
 
     const runCode = () => {
+        setIsRunning(true);
         const code = editorRef.current.getValue();
         socketRef.current.emit(ACTIONS.RUN_CODE, { RoomId, code });
     };
 
     return (
-        <div>
+        <div className="editor-container">
             <textarea id="realtimeEditor"></textarea>
-            <button onClick={runCode} style={{ marginTop: "10px", padding: "5px 10px", background: "green", color: "white" }}>Run Code</button>
-            <pre style={{ background: "#282a36", color: "#50fa7b", padding: "10px", marginTop: "10px" }}>{output}</pre>
+            <button className={`run-button ${isRunning ? "running" : ""}`} onClick={runCode}>
+                {isRunning ? "Running..." : "Run Code"}
+            </button>
+            <div className="output-section">
+                <h3>Output:</h3>
+                <pre>{output}</pre>
+            </div>
         </div>
     );
 };
