@@ -57,7 +57,7 @@ Ensure you have the following installed:
 
     
 sh
-    git clone https://github.com/codersgyan/realtime-code-editor.git
+    git clone https://github.com/SkyRex06/RealTime_Compiler.git
     cd realtime-code-editor
 
 
@@ -129,9 +129,4 @@ sh
 
 5. **Open a pull request.**
 
-## License
 
-This project is licensed under the [MIT License](LICENSE).
-
-
-If you find this project useful, consider giving it a ⭐ on GitHub!
