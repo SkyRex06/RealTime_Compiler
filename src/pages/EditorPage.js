@@ -46,7 +46,7 @@ const EditorPage = () => {
                     }
                     setClients(clients);
                     socketRef.current.emit(ACTIONS.SYNC_CODE, {
-                        code: codeRef.current,
+                        code: codeRef.current || '', // Ensure codeRef.current is not undefined
                         socketId,
                     });
                 }
@@ -133,3 +133,79 @@ const EditorPage = () => {
 };
 
 export default EditorPage;
+
+
+
+.mainWrap {
+    display: flex;
+    height: 100vh;
+    background-color: #1c1e29;
+    color: #ffffff;
+}
+
+.aside {
+    width: 300px;
+    background: linear-gradient(120deg, #1c1e29, #4ea8d3);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
+}
+
+.asideInner {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.logoImage {
+    width: 150px;
+    margin: 0 auto;
+}
+
+.clientsList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto;
+    max-height: 300px;
+}
+
+.btn {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.copyBtn {
+    background-color: #61dafb;
+    color: #1c1e29;
+}
+
+.copyBtn:hover {
+    background-color: #4ea8d3;
+    transform: scale(1.05);
+}
+
+.leaveBtn {
+    background-color: #ff4d4d;
+    color: #ffffff;
+}
+
+.leaveBtn:hover {
+    background-color: #e63939;
+    transform: scale(1.05);
+}
+
+.editorWrap {
+    flex: 1;
+    padding: 20px;
+    background-color: #282c34;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

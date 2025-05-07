@@ -7,3 +7,121 @@ body {
     -moz-osx-font-smoothing: grayscale;
     background: #1c1e29;
 }
+h1, h2, h3, h4, h5, h6 {
+    color: #ffffff;
+    margin: 0;
+    font-weight: 600;
+}
+
+p {
+    color: #d1d1d1;
+    line-height: 1.6;
+    margin: 0 0 1em;
+}
+
+a {
+    color: #61dafb;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+button {
+    background-color: #61dafb;
+    color: #1c1e29;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+button:hover {
+    background-color: #4ea8d3;
+    transform: scale(1.05);
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(120deg, #1c1e29, #000000, #61dafb, #4ea8d3, #ff007f, #00ff7f);
+    background-size: 600% 600%;
+    filter: blur(8px);
+    animation: gradientAnimation 8s ease infinite, pulseEffect 4s infinite;
+    animation: gradientAnimation 6s ease infinite;
+    z-index: -1;
+}
+
+@keyframes gradientAnimation {
+    0% {
+        background-position: 0% 0%;
+    }
+    25% {
+        background-position: 50% 50%;
+    }
+    50% {
+        background-position: 100% 100%;
+    }
+    75% {
+        background-position: 50% 50%;
+    }
+    100% {
+        background-position: 0% 0%;
+    }
+}
+
+@keyframes slideIn {
+    0% {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 250px;
+    height: 100%;
+    background: linear-gradient(120deg, #1c1e29, #4ea8d3);
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    animation: slideIn 0.5s ease-out;
+    z-index: 1;
+}
+
+.sidebar a {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 1.2rem;
+    padding: 10px 15px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.sidebar a:hover {
+    background-color: #61dafb;
+    transform: scale(1.1);
+}
+
+.sidebar .logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #61dafb;
+    margin-bottom: 20px;
+    text-align: center;
+}
